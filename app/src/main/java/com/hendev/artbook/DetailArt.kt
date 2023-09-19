@@ -21,6 +21,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
 import com.hendev.artbook.databinding.ActivityDetailArtBinding
+import java.io.ByteArrayOutputStream
 
 class DetailArt : AppCompatActivity() {
 
@@ -40,6 +41,61 @@ class DetailArt : AppCompatActivity() {
 
     fun saveButtonOp(view: View) {
 
+        val artName = binding.txtArtName.text.toString()
+        val artistName = binding.txtArtist.text.toString()
+        val year = binding.txtYear.text.toString()
+
+        if (selectedBitmap != null){
+            val smallBitmap = makeSmallerBitmap(selectedBitmap!!,300)
+            val outputStream = ByteArrayOutputStream()
+            smallBitmap.compress(Bitmap.CompressFormat.PNG,50, outputStream)
+            val byteArray = outputStream.toByteArray()
+
+            val model = ArtModel(artName, artistName, year, byteArray)
+            databaseOperations(model);
+        }
+    }
+
+    private fun databaseOperations(data: ArtModel){
+        try {
+            val database = this.openOrCreateDatabase("ArtsBook", MODE_PRIVATE, null)
+            database.execSQL("CREATE TABLE IF NOT EXISTS Arts (id INTEGER PRIMARY KEY, art VARCHAR, artist VARCHAR, year VARCHAR, image BLOB)")
+            val sqlString = "INSERT INTO Arts (art, artist, year, image) VALUES (?, ?, ?, ?)"
+            val statement = database.compileStatement(sqlString)
+            statement.bindString(1, data.artName)
+            statement.bindString(2, data.artistName)
+            statement.bindString(3, data.artYear)
+            statement.bindBlob(4, data.imageArray)
+            statement.execute()
+
+        }catch (e: Exception){
+            e.printStackTrace()
+        }
+
+        val intent = Intent(this, MainActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        startActivity(intent)
+    }
+
+    private fun makeSmallerBitmap(image: Bitmap, maxSize:Int): Bitmap {
+        var width = image.width
+        var height = image.width
+
+        val bitmapRatio : Double = width.toDouble() / height.toDouble()
+
+        if (bitmapRatio > 1){
+            //Landscape
+            width = maxSize
+            val scaledHeight = width / bitmapRatio
+            height = scaledHeight.toInt()
+        }else{
+            //Portrait
+            height = maxSize
+            val scaledWidth = height * bitmapRatio
+            width = scaledWidth.toInt()
+        }
+
+        return Bitmap.createScaledBitmap(image,width,height,true);
     }
 
     fun selectImage(view: View) {
