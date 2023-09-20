@@ -6,23 +6,33 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.hendev.artbook.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var artsList: ArrayList<ArtModel>
+    private lateinit var  artAdaptor: ArtAdaptor
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+        artsList = ArrayList<ArtModel>()
         getDataFromDb();
+        createRvOperations()
+    }
+
+    private fun createRvOperations() {
+        artAdaptor = ArtAdaptor(artsList)
+        binding.rvMain.layoutManager = LinearLayoutManager(this)
+        binding.rvMain.adapter = artAdaptor
     }
 
     fun getDataFromDb() {
-        artsList = ArrayList<ArtModel>()
+
         try {
             val database = this.openOrCreateDatabase("ArtsBook", MODE_PRIVATE, null)
             val cursor = database.rawQuery("SELECT * FROM Arts", null)
@@ -42,6 +52,7 @@ class MainActivity : AppCompatActivity() {
                 var model = ArtModel(name, artist, year, image, id)
                 artsList.add(model)
             }
+            artAdaptor.notifyDataSetChanged();
             cursor.close()
 
             Toast.makeText(this,"Data Collected",Toast.LENGTH_SHORT).show()
@@ -58,7 +69,9 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
         if (item.itemId == R.id.add_item) {
-            startActivity(Intent(this, DetailArt::class.java))
+            val intent = Intent(this, DetailArt::class.java)
+            intent.putExtra("info", "old")
+            startActivity(intent)
         }
 
         if (item.itemId == R.id.remove_item) {

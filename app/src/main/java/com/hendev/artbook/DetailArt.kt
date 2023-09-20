@@ -5,7 +5,9 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.database.sqlite.SQLiteDatabase
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -28,6 +30,7 @@ class DetailArt : AppCompatActivity() {
     private lateinit var binding: ActivityDetailArtBinding
     private lateinit var activityResult: ActivityResultLauncher<Intent>
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
+    private var saveStatus: Int = 0;
     private var selectedBitmap: Bitmap? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,12 +38,42 @@ class DetailArt : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
+
+        saveStatus = intent.getIntExtra("id",0)
+        prepareActivity();
         startIntentLauncherForImage();
         startPermissionLauncher();
     }
 
-    fun saveButtonOp(view: View) {
+    private fun prepareActivity(){
+        if (saveStatus != 0){
+            binding.btnSave.visibility = View.INVISIBLE
+            val database = this.openOrCreateDatabase("ArtsBook", MODE_PRIVATE, null)
+            val cursor = database.rawQuery("SELECT * FROM Arts WHERE id = ?", arrayOf(saveStatus.toString()))
+            val indexArt = cursor.getColumnIndex("art")
+            val indexArtist = cursor.getColumnIndex("artist")
+            val indexYear = cursor.getColumnIndex("year")
+            val indexImage = cursor.getColumnIndex("image")
 
+            while (cursor.moveToNext()){
+                binding.txtArtName.setText(cursor.getString(indexArt))
+                binding.txtArtist.setText(cursor.getString(indexArtist))
+                binding.txtYear.setText(cursor.getString(indexYear))
+
+                val byteArray = cursor.getBlob(indexImage)
+                val bitmap = BitmapFactory.decodeByteArray(byteArray,0, byteArray.size)
+                binding.imgArt.setImageBitmap(bitmap)
+            }
+
+            cursor.close()
+
+        } else{
+            println("Ready For New One")
+            binding.btnSave.visibility = View.VISIBLE
+        }
+    }
+
+    fun saveButtonOp(view: View) {
         val artName = binding.txtArtName.text.toString()
         val artistName = binding.txtArtist.text.toString()
         val year = binding.txtYear.text.toString()

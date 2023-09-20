@@ -1,18 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
 
     <TextView
+        android:id="@+id/rvTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="5dp"
+        android:padding="1dp"
         android:text="Simple Row Data will be shown here..."
-        android:textSize="20sp"
-        android:layout_margin="10dp"
-        android:padding="10dp"
         android:textColor="@android:color/holo_orange_dark"
-        >
+        android:textSize="20sp">
+    </TextView>
+
+    <TextView
+        android:id="@+id/rvSubTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:padding="1dp"
+        android:text="Sub Text"
+        android:textColor="#7B7B7B"
+        android:textSize="10sp">
     </TextView>
 
 </LinearLayout>
